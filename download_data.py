@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Downloads GFS model data from AWS S3 bucket.
-# Created 10 Apr 2025 by Sam Gardner <<YOUR EMAIL HERE>>
+# Created 10 Apr 2025 by Sam Gardner <samuel.gardner@ttu.edu>
 
 
 """

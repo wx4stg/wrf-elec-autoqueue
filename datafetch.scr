@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=data_download
+#SBATCH --output=data_download.out
+#SBATCH --error=data_download.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=0:15:00
+#SBATCH --mail-user=<YOUR EMAIL HERE>
+#SBATCH --mail-type=ALL
+
+cd /lustre/work/$USER/WPS/
+/home/$USER/micromamba/envs/autowrf/bin/python3 download_data.py 2025-04-04 00 60

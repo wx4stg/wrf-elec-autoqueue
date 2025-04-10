@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH -J metgrid
+#SBATCH -o metgrid.out
+#SBATCH -e metgrid.err
+#SBATCH -p nocona
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH -t 01:00:00
+#SBATCH --mail-user=<YOUR EMAIL HERE>
+#SBATCH --mail-type=ALL
+
+module load gcc/10.1.0 openmpi/4.0.4 netcdf-c/4.7.3-mpi netcdf-fortran/4.5.2-mpi hdf5/1.10.6-mpi
+
+cd /lustre/work/$USER/WPS
+
+/lustre/work/$USER/WPS/metgrid.exe
+
+cp ./met_em* /lustre/work/$USER/wrf4-elec/run/

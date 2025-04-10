@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --job-name=real
+#SBATCH --output=real.out
+#SBATCH --error=real.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=36
+#SBATCH -t 01:00:00
+#SBATCH --mail-user=<YOUR EMAIL HERE>
+#SBATCH --mail-type=ALL
+
+module load gcc/10.1.0 openmpi/4.0.4 netcdf-c/4.7.3-mpi netcdf-fortran/4.5.2-mpi hdf5/1.10.6-mpi
+
+cd /lustre/work/$USER/wrf4-elec/run
+
+mpirun -np 36 /lustre/work/$USER/wrf4-elec/run/real.exe

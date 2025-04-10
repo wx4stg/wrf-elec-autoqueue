@@ -17,7 +17,8 @@ Fetches data in 3-hour intervals, starting from the initialization hour.
 import requests
 from datetime import datetime as dt
 import sys
-from os import path, getlogin
+from os import path
+from getpass import getuser
 
 if __name__ == '__main__':
     initdate = dt.strptime(sys.argv[1], '%Y-%m-%d')
@@ -25,7 +26,7 @@ if __name__ == '__main__':
     n_hours = int(sys.argv[3])
     for hr in range(0, n_hours+1, 3):
         filename = 'gfs.t'+initrun+'z.pgrb2.0p25.f'+str(hr).zfill(3)
-        if path.exists(f'/lustre/work/{getlogin()}/WPS/data/'+filename):
+        if path.exists(f'/lustre/work/{getuser()}/WPS/data/'+filename):
             print(filename+' already exists, skipping')
             continue
         link = 'https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.'+initdate.strftime("%Y%m%d")+'/'+initrun+'/atmos/'+filename
@@ -34,5 +35,5 @@ if __name__ == '__main__':
         if not res.text.startswith('GRIB'):
             print('Invalid model data for '+filename+', exiting')
             exit(1)
-        with open(f'/lustre/work/{getlogin()}/WPS/data/'+filename, 'wb') as f:
+        with open(f'/lustre/work/{getuser()}/WPS/data/'+filename, 'wb') as f:
             f.write(res.content)

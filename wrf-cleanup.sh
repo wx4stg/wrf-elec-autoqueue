@@ -2,6 +2,7 @@
 # Cleanup WRF data after running
 # Created 21 April 2025 by Sam Gardner <samuel.gardner@ttu.edu>
 
+rm /lustre/work/$USER/WPS/data/*
 rm /lustre/work/$USER/WPS/geogrid.log.*
 rm /lustre/work/$USER/WPS/met_em.d*
 rm /lustre/work/$USER/WPS/FILE*

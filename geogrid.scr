@@ -9,7 +9,8 @@
 #SBATCH --mail-user=<YOUR EMAIL HERE>
 #SBATCH --mail-type=ALL
 
-module load gcc/10.1.0 openmpi/4.0.4 netcdf-c/4.7.3-mpi netcdf-fortran/4.5.2-mpi hdf5/1.10.6-mpi
+source /lustre/work/$USER/SUB/setup-env.sh
+spack load wps
 
 cd /lustre/work/$USER/WPS
 

@@ -19,21 +19,26 @@ from datetime import datetime as dt
 import sys
 from os import path
 from getpass import getuser
+from multiprocessing import Pool
+
+initdate = dt.strptime(sys.argv[1], '%Y-%m-%d')
+initrun = str(int(sys.argv[2])).zfill(2)
+n_hours = int(sys.argv[3])
+
+def fetch(hr):
+    filename = 'gfs.t'+initrun+'z.pgrb2.0p25.f'+str(hr).zfill(3)
+    if path.exists(f'/lustre/work/{getuser()}/WPS/data/'+filename):
+        print(filename+' already exists, skipping')
+        return
+    link = 'https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.'+initdate.strftime("%Y%m%d")+'/'+initrun+'/atmos/'+filename
+    print('Downloading: '+filename)
+    res = requests.get(link)
+    if not res.text.startswith('GRIB'):
+        print('Invalid model data for '+filename+', exiting')
+        exit(1)
+    with open(f'/lustre/work/{getuser()}/WPS/data/'+filename, 'wb') as f:
+        f.write(res.content)
 
 if __name__ == '__main__':
-    initdate = dt.strptime(sys.argv[1], '%Y-%m-%d')
-    initrun = str(int(sys.argv[2])).zfill(2)
-    n_hours = int(sys.argv[3])
-    for hr in range(0, n_hours+1, 3):
-        filename = 'gfs.t'+initrun+'z.pgrb2.0p25.f'+str(hr).zfill(3)
-        if path.exists(f'/lustre/work/{getuser()}/WPS/data/'+filename):
-            print(filename+' already exists, skipping')
-            continue
-        link = 'https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.'+initdate.strftime("%Y%m%d")+'/'+initrun+'/atmos/'+filename
-        print('Downloading: '+filename)
-        res = requests.get(link)
-        if not res.text.startswith('GRIB'):
-            print('Invalid model data for '+filename+', exiting')
-            exit(1)
-        with open(f'/lustre/work/{getuser()}/WPS/data/'+filename, 'wb') as f:
-            f.write(res.content)
+    with Pool(16) as p:
+        p.map(fetch, range(0, n_hours+1, 3))

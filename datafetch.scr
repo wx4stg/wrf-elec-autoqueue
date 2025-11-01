@@ -4,10 +4,10 @@
 #SBATCH --error=data_download.err
 #SBATCH --partition=nocona
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=0:15:00
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=00:30:00
 #SBATCH --mail-user=<YOUR EMAIL HERE>
 #SBATCH --mail-type=ALL
 
 cd /lustre/work/$USER/WPS/
-/home/$USER/micromamba/envs/autowrf/bin/python3 download_data.py 2025-04-04 00 60
+/home/$USER/micromamba/envs/autowrf/bin/python3 /lustre/work/$USER/SUB/download_data.py 2025-04-04 00 60

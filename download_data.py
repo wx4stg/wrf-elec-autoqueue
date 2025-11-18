@@ -20,7 +20,7 @@ import sys
 from os import path
 from getpass import getuser
 from multiprocessing import Pool
-from shutil import Path
+from pathlib import Path
 
 initdate = dt.strptime(sys.argv[1], '%Y-%m-%d')
 initrun = str(int(sys.argv[2])).zfill(2)
@@ -41,6 +41,6 @@ def fetch(hr):
         f.write(res.content)
 
 if __name__ == '__main__':
-    Path.mkdir(f'/lustre/work/{getuser()}/WPS/data/', exist_ok=True)
+    Path(f'/lustre/work/{getuser()}/WPS/data/').mkdir(exist_ok=True)
     with Pool(16) as p:
         p.map(fetch, range(0, n_hours+1, 3))

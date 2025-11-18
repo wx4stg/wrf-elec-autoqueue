@@ -10,6 +10,6 @@ Requires:
 - compiled build of wrf-elec in /lustre/work/$USER/wrf4-elec
 - compiled build of WPS in /lustre/work/$USER/WPS
 - run `git clone https://github.com/wx4stg/wrf-elec-autoqueue /lustre/work/$USER/SUB` to get these scripts
-- micromamba environment 'wrf' with `requests` installed
+- micromamba environment 'autowrf' with `requests` installed
 
 Following my [installation instructions](https://gist.github.com/wx4stg/8b53875068521155c74c0ac4fe5ca87d) to the letter should give you a compatible install.

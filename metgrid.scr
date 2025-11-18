@@ -14,7 +14,9 @@ spack load gcc glibc openmpi parallel-netcdf hdf5 netcdf-fortran netcdf-c jasper
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-fortran)/lib/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-c)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i zlib)/lib/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i jasper)/lib64/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i libpng)/lib/
 
 cd /lustre/work/$USER/WPS
 

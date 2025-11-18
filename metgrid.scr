@@ -9,8 +9,12 @@
 #SBATCH --mail-user=<YOUR EMAIL HERE>
 #SBATCH --mail-type=ALL
 
-source /lustre/work/$USER/SUB/setup-env.sh
-spack load wps
+source /lustre/work/$USER/spack/share/spack/setup-env.sh
+spack load gcc glibc openmpi parallel-netcdf hdf5 netcdf-fortran netcdf-c jasper libpng zlib zlib-ng wrf wps
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-fortran)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-c)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i jasper)/lib64/
 
 cd /lustre/work/$USER/WPS
 

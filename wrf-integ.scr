@@ -10,7 +10,12 @@
 #SBATCH --mail-user=<YOUR EMAIL HERE>
 #SBATCH --mail-type=ALL
 
-module load gcc/14.2.0 openmpi/5.0.5 wrf/4.5.2-mpi netcdf-fortran/4.6.1-mpi netcdf-c/4.9.2-mpi
+source /lustre/work/$USER/spack/share/spack/setup-env.sh
+spack load gcc glibc openmpi parallel-netcdf hdf5 netcdf-fortran netcdf-c jasper libpng zlib zlib-ng wrf wps
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-fortran)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-c)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i jasper)/lib64/
 
 cd /lustre/work/$USER/wrf4-elec/run/
 

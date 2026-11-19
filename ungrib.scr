@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J ungrib
 #SBATCH -o ungrib.out
-#SBATCH -e ugrib.err
+#SBATCH -e ungrib.err
 #SBATCH -p nocona
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=1

@@ -15,18 +15,7 @@ if ! command -v sbatch > /dev/null; then
     exit 1
 fi
 
-WORK=/lustre/work/$USER
 COMPILE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/compile"
-
-# Clone a repository unless it already exists (so this script can be re-run after a failure)
-clone() {
-    local dest="$1"; shift
-    if [ -d "$dest" ]; then
-        echo "$dest already exists, skipping clone"
-    else
-        git clone "$@" "$dest" || exit 1
-    fi
-}
 
 # Submit a job and print its ID, or exit if submission fails
 submit() {
@@ -35,39 +24,12 @@ submit() {
     echo "${jid%%;*}"
 }
 
-## Clone sources ##############################################################
-cd "$WORK" || exit 1
-
-# spack, checked out at its latest release
-if [ -d "$WORK/spack" ]; then
-    echo "$WORK/spack already exists, skipping clone and checkout"
-else
-    git clone https://github.com/spack/spack "$WORK/spack" || exit 1
-    SPACK_RELEASE=$(git -C "$WORK/spack" tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1) \
-        || { echo "No spack release tag found in $WORK/spack" >&2; exit 1; }
-    echo "Checking out spack $SPACK_RELEASE"
-    git -C "$WORK/spack" checkout "$SPACK_RELEASE" || exit 1
-fi
-
-clone "$WORK/boxmg4wrf" --single-branch --branch main https://github.com/MicroTed/boxmg4wrf --recursive
-clone "$WORK/wrf4-elec" --single-branch --branch release-v4.6.1-elec https://github.com/MicroTed/wrf4-elec --recursive
-clone "$WORK/WPS" --single-branch --branch release-v4.6.0 https://github.com/wrf-model/WPS --recursive
-
-# Enable electrification in quarter circle hodograph test
-TEST_DIR="$WORK/wrf4-elec/test/em_quarter_ss"
-for f in input_sounding namelist.input; do
-    if [ ! -f "$TEST_DIR/electest/$f" ]; then
-        echo "$TEST_DIR/electest/$f not found" >&2
-        exit 1
-    fi
-    rm -f "$TEST_DIR/$f"
-    cp "$TEST_DIR/electest/$f" "$TEST_DIR/$f"
-done
-
-cd - > /dev/null
 echo "Submitting compile steps with dependencies..."
 
-jid_spack=$(submit "$COMPILE_DIR/spack_ins.scr") || exit 1
+jid_clone=$(submit "$COMPILE_DIR/clone.scr") || exit 1
+echo "Submitted clone.scr as Job ID $jid_clone"
+
+jid_spack=$(submit --dependency=afterok:$jid_clone "$COMPILE_DIR/spack_ins.scr") || exit 1
 echo "Submitted spack_ins.scr as Job ID $jid_spack"
 
 jid_box=$(submit --dependency=afterok:$jid_spack "$COMPILE_DIR/boxcomp.scr") || exit 1
@@ -92,8 +54,8 @@ echo "Submitted wrfcomp.scr em_real as Job ID $jid_real_comp"
 jid_wps=$(submit --dependency=afterok:$jid_real_comp "$COMPILE_DIR/wpscomp.scr") || exit 1
 echo "Submitted wpscomp.scr as Job ID $jid_wps"
 
-# The geography download doesn't depend on anything, so it runs alongside the rest
-jid_geog=$(submit "$COMPILE_DIR/geogdl.scr") || exit 1
+# The geography download only needs the WPS clone, so it runs alongside the rest
+jid_geog=$(submit --dependency=afterok:$jid_clone "$COMPILE_DIR/geogdl.scr") || exit 1
 echo "Submitted geogdl.scr as Job ID $jid_geog"
 
 echo "Compilation successfully submitted. Use 'squeue -u $USER' to check job status."

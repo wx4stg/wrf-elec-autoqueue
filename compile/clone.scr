@@ -1,0 +1,55 @@
+#!/bin/bash
+#SBATCH --job-name=clone
+#SBATCH --output=clone.out
+#SBATCH --error=clone.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=01:00:00
+#SBATCH --mail-type=ALL
+# --mail-user is passed on the sbatch command line by wrf-compile.sh
+
+# Clones spack, boxmg, wrf-elec and WPS into /lustre/work/$USER.
+# Repositories that already exist are left alone, so this is safe to re-run.
+
+set -euo pipefail
+
+WORK=/lustre/work/$USER
+cd "$WORK"
+
+# Clone a repository unless it already exists
+clone() {
+    local dest="$1"; shift
+    if [ -d "$dest" ]; then
+        echo "$dest already exists, skipping clone"
+    else
+        git clone "$@" "$dest"
+    fi
+}
+
+# spack, checked out at its latest release
+if [ -d "$WORK/spack" ]; then
+    echo "$WORK/spack already exists, skipping clone and checkout"
+else
+    git clone https://github.com/spack/spack "$WORK/spack"
+    SPACK_RELEASE=$(git -C "$WORK/spack" tag -l 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1) \
+        || { echo "No spack release tag found in $WORK/spack" >&2; exit 1; }
+    echo "Checking out spack $SPACK_RELEASE"
+    git -C "$WORK/spack" checkout "$SPACK_RELEASE"
+fi
+
+clone "$WORK/boxmg4wrf" --single-branch --branch main https://github.com/MicroTed/boxmg4wrf --recursive
+clone "$WORK/wrf4-elec" --single-branch --branch release-v4.6.1-elec https://github.com/MicroTed/wrf4-elec --recursive
+clone "$WORK/WPS" --single-branch --branch release-v4.6.0 https://github.com/wrf-model/WPS --recursive
+
+# Enable electrification in quarter circle hodograph test
+# (copied rather than moved so re-running is safe)
+TEST_DIR="$WORK/wrf4-elec/test/em_quarter_ss"
+for f in input_sounding namelist.input; do
+    if [ ! -f "$TEST_DIR/electest/$f" ]; then
+        echo "$TEST_DIR/electest/$f not found" >&2
+        exit 1
+    fi
+    rm -f "$TEST_DIR/$f"
+    cp "$TEST_DIR/electest/$f" "$TEST_DIR/$f"
+done

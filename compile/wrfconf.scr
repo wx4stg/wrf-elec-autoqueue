@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --job-name=wrf_configure
+#SBATCH --output=wrfconf.out
+#SBATCH --error=wrfconf.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=00:30:00
+#SBATCH --mail-type=ALL
+# --mail-user is passed on the sbatch command line by wrf-compile.sh
+
+# Answers to ./configure's two prompts. Check wrfconf.out if configuration fails;
+# the menu numbering can change between WRF versions.
+COMPILER_OPTION=9   # (dmpar) GNU (gfortran/gcc)
+NESTING_OPTION=1    # basic nesting
+
+source /lustre/work/$USER/spack/share/spack/setup-env.sh
+spack load gcc glibc openmpi parallel-netcdf wps netcdf-fortran wrf automake hdf5 bzip2 netcdf-c jasper libpng zlib-ng zlib
+
+export BOXMGLIBDIR="/lustre/work/$USER/boxmg4wrf"
+export NETCDF=$(spack location -i netcdf-fortran)
+export WRF_ELEC=1
+cd /lustre/work/$USER/wrf4-elec
+
+printf '%s\n%s\n' "$COMPILER_OPTION" "$NESTING_OPTION" | ./configure
+
+# Make sure we actually got a GNU dmpar configuration
+if [ ! -f configure.wrf ] || ! grep -q 'DMPARALLEL' configure.wrf || ! grep -q 'gfortran' configure.wrf; then
+    echo "WRF configure failed or did not select GNU dmpar (option $COMPILER_OPTION); see wrfconf.out" >&2
+    exit 1
+fi

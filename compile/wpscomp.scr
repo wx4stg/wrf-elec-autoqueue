@@ -1,0 +1,49 @@
+#!/bin/bash
+#SBATCH --job-name=wps_compile
+#SBATCH --output=wpscomp.out
+#SBATCH --error=wpscomp.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=2
+#SBATCH --mem-per-cpu=3994MB
+#SBATCH --time=01:00:00
+#SBATCH --mail-type=ALL
+# --mail-user is passed on the sbatch command line by wrf-compile.sh
+
+# Answer to ./configure's prompt. Check wpscomp.out if configuration fails;
+# the menu numbering can change between WPS versions.
+PLATFORM_OPTION=3   # Linux x86_64, gfortran (dmpar)
+
+source /lustre/work/$USER/spack/share/spack/setup-env.sh
+spack load gcc glibc openmpi parallel-netcdf wps netcdf-fortran wrf automake hdf5 bzip2 netcdf-c jasper libpng zlib-ng zlib
+
+export BOXMGLIBDIR="/lustre/work/$USER/boxmg4wrf"
+export NETCDF=$(spack location -i netcdf-fortran)
+export WRF_ELEC=1
+export WRF_DIR=/lustre/work/$USER/wrf4-elec/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-fortran)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i netcdf-c)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i zlib)/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(spack location -i libpng)/lib/
+export JASPERINC=$(spack location -i jasper)/include/
+export JASPERLIB=$(spack location -i jasper)/lib64/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JASPERLIB
+
+cd /lustre/work/$USER/WPS/
+
+printf '%s\n' "$PLATFORM_OPTION" | ./configure
+if [ ! -f configure.wps ] || ! grep -q 'gfortran' configure.wps; then
+    echo "WPS configure failed or did not select gfortran (option $PLATFORM_OPTION); see wpscomp.out" >&2
+    exit 1
+fi
+
+# Like WRF, ./compile exits 0 even on failure, so check for the executables
+rm -f geogrid.exe ungrib.exe metgrid.exe
+./compile
+
+for exe in geogrid.exe ungrib.exe metgrid.exe; do
+    if [ ! -e "$exe" ]; then
+        echo "WPS compile failed: $exe was not built; see wpscomp.err" >&2
+        exit 1
+    fi
+done

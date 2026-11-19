@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH --job-name=geog_download
+#SBATCH --output=geogdl.out
+#SBATCH --error=geogdl.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=04:00:00
+#SBATCH --mail-type=ALL
+# --mail-user is passed on the sbatch command line by wrf-compile.sh
+
+# Downloads the high-resolution mandatory WPS geography data
+# (https://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html#mandatory)
+# and points namelist.wps at it.
+
+TARBALL=geog_high_res_mandatory.tar.gz
+GEOG_DIR=/lustre/work/$USER/WPS/WPS_GEOG   # the high-res tarball extracts to WPS_GEOG/
+
+cd /lustre/work/$USER/WPS/
+
+if [ -f "$GEOG_DIR/.download_complete" ]; then
+    echo "$GEOG_DIR already downloaded, skipping"
+else
+    curl -fLO https://www2.mmm.ucar.edu/wrf/src/wps_files/$TARBALL || exit 1
+    tar -xzf $TARBALL || exit 1
+    if [ ! -d "$GEOG_DIR" ]; then
+        echo "Expected $TARBALL to extract to $GEOG_DIR, but it doesn't exist" >&2
+        exit 1
+    fi
+    rm $TARBALL
+    touch "$GEOG_DIR/.download_complete"
+fi
+
+sed -i "s|^\( *geog_data_path *=\).*|\1 '$GEOG_DIR/'|" namelist.wps
+grep geog_data_path namelist.wps

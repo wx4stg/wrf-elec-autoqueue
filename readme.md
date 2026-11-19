@@ -15,6 +15,11 @@ Requires:
 Following my [installation instructions](https://gist.github.com/wx4stg/8b53875068521155c74c0ac4fe5ca87d) to the letter should give you a compatible install.
 
 ---
+Compilation:
+
+See [wrf-elec.md](https://gist.github.com/wx4stg/8b53875068521155c74c0ac4fe5ca87d) for compilation instructions. An experimental automated compile script is available as `$ bash ./wrf-compile.sh <email>`
+
+---
 Running wrf on multiple nodes:
 
 What to check prior to submitting a multinode job:

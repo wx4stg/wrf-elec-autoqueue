@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH --job-name=wrf_compile
+#SBATCH --output=wrfcomp.out
+#SBATCH --error=wrfcomp.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=20
+#SBATCH --mem-per-cpu=3994MB
+#SBATCH --time=02:00:00
+#SBATCH --mail-type=ALL
+# --mail-user is passed on the sbatch command line by wrf-compile.sh
+
+# Usage: sbatch wrfcomp.scr <em_quarter_ss|em_real>
+# WRF only compiles on 2 cores; the 20 tasks are requested for the memory, not the compute.
+TARGET="$1"
+case "$TARGET" in
+    em_quarter_ss) EXPECTED="ideal.exe wrf.exe" ;;
+    em_real)       EXPECTED="real.exe wrf.exe" ;;
+    *) echo "Usage: sbatch wrfcomp.scr <em_quarter_ss|em_real>" >&2; exit 1 ;;
+esac
+
+source /lustre/work/$USER/spack/share/spack/setup-env.sh
+spack load gcc glibc openmpi parallel-netcdf wps netcdf-fortran wrf automake hdf5 bzip2 netcdf-c jasper libpng zlib-ng zlib
+
+export NETCDF=$(spack location -i netcdf-fortran)
+export NETCDF4=1
+export WRF_ELEC=1
+export BOXMGLIBDIR="/lustre/work/$USER/boxmg4wrf"
+cd /lustre/work/$USER/wrf4-elec/
+
+# ./compile exits 0 even when the build fails, so remove old executables and
+# check for the new ones afterwards (otherwise a previous target's wrf.exe would pass).
+rm -f main/*.exe
+./compile "$TARGET"
+
+for exe in $EXPECTED; do
+    if [ ! -x "main/$exe" ]; then
+        echo "WRF compile ($TARGET) failed: main/$exe was not built; see wrfcomp.err" >&2
+        exit 1
+    fi
+done

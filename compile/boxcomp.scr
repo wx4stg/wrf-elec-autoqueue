@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --job-name=boxmg_comp
+#SBATCH --output=boxcomp.out
+#SBATCH --error=boxcomp.err
+#SBATCH --partition=nocona
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=03:00:00
+#SBATCH --mail-type=ALL
+# --mail-user is passed on the sbatch command line by wrf-compile.sh
+
+source /lustre/work/$USER/spack/share/spack/setup-env.sh
+spack load gcc glibc openmpi parallel-netcdf wps netcdf-fortran wrf automake hdf5 bzip2 netcdf-c jasper libpng zlib-ng zlib
+
+export BOXMG_COMPILER="gnu"
+cd /lustre/work/$USER/boxmg4wrf/
+make || exit 1
+make check || exit 1
+
+# Both libraries must exist for wrf-elec to link against boxmg
+for lib in lib/libboxmg_opt_sgl.a lib/libboxmg-extras_opt_sgl.a; do
+    if [ ! -s "$lib" ]; then
+        echo "boxmg build failed: $lib is missing" >&2
+        exit 1
+    fi
+done
+ls -lh lib/

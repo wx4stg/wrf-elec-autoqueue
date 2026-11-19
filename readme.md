@@ -12,7 +12,14 @@ Requires:
 - run `git clone https://github.com/wx4stg/wrf-elec-autoqueue` to get these scripts
 - micromamba environment 'autowrf' with `requests` installed
 
-Following my [installation instructions](https://gist.github.com/wx4stg/8b53875068521155c74c0ac4fe5ca87d) to the letter should give you a compatible install.
+Installation & usage:
+- Clone this repo to your /lustre/work/$USER
+- Run email_replace.sh you@ttu.edu to set your email in the submission scripts
+- Optionally, run partition_replace.sh to set a different partition (defaults to nocona) for building/running WRF-elec
+- Build WRF-elec, see "Compilation" below
+- Install micromamba according to the [official installation instructions](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html)
+- use it to create the autowrf environment: `micromamba create --file env.yaml`
+- Run WRF with wrf-scheduler.sh
 
 ---
 Compilation:

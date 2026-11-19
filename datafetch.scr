@@ -9,5 +9,8 @@
 #SBATCH --mail-user=<YOUR EMAIL HERE>
 #SBATCH --mail-type=ALL
 
+# use AUTOQUEUE_DIR if exported by wrf-scheduler.sh, otherwise default to the directory where this script is submitted from
+AUTOQUEUE_DIR="${AUTOQUEUE_DIR:-$SLURM_SUBMIT_DIR}"
+
 cd /lustre/work/$USER/WPS/
-/home/$USER/micromamba/envs/autowrf/bin/python3 /lustre/work/$USER/SUB/download_data.py 2025-04-04 00 60
+/home/$USER/micromamba/envs/autowrf/bin/python3 "$AUTOQUEUE_DIR"/download_data.py 2025-04-04 00 60

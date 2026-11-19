@@ -6,6 +6,7 @@ rm /lustre/work/$USER/WPS/data/*
 rm /lustre/work/$USER/WPS/geogrid.log.*
 rm /lustre/work/$USER/WPS/met_em.d*
 rm /lustre/work/$USER/WPS/FILE*
+rm /lustre/work/$USER/WPS/PFILE*
 rm /lustre/work/$USER/WPS/GRIBFILE.*
 
 rm /lustre/work/$USER/wrf4-elec/run/rsl.error*

@@ -27,4 +27,4 @@ export OMP_NUM_THREADS=1
 
 cd /lustre/work/$USER/wrf4-elec/run/
 
-mpirun --map-by ppr:128:node -np $SLURM_NTASKS /lustre/work/$USER/wrf4-elec/run/wrf.exe
+mpirun --map-by ppr:$SLURM_NTASKS_PER_NODE:node -np $SLURM_NTASKS /lustre/work/$USER/wrf4-elec/run/wrf.exe
